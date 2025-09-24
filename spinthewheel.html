@@ -1,216 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Toyota Prize Wheel</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #b30000, #660000);
-      font-family: "Arial", sans-serif;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toyota Prize Wheel</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #660000, #b30000);
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+  }
 
-    .wheel-container {
-      position: relative;
-      width: 550px;
-      height: 550px;
-    }
+  .wheel-container {
+    position: relative;
+    width: 550px;
+    height: 550px;
+  }
 
-    canvas {
-      border-radius: 50%;
-      background: radial-gradient(circle at center, #fffbe6 0%, #ffd700 100%);
-      box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.4);
-    }
+  canvas {
+    border-radius: 50%;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.3);
+    background: radial-gradient(circle at center, #fffbe6 0%, #ffd700 100%);
+  }
 
-    .spin-button {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 18px 36px;
-      background: linear-gradient(145deg, #ffcc00, #ffd700);
-      border: none;
-      border-radius: 50px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #660000;
-      cursor: pointer;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-      transition: 0.2s;
-      z-index: 2;
-    }
-    .spin-button:hover {
-      background: linear-gradient(145deg, #ffd700, #ffcc00);
-      transform: translate(-50%, -50%) scale(1.05);
-    }
+  .spin-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 18px 36px;
+    background: linear-gradient(145deg, #ffcc00, #ffd700);
+    border: none;
+    border-radius: 50px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #660000;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 2;
+    transition: 0.2s;
+  }
+  .spin-button:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+    background: linear-gradient(145deg, #ffd700, #ffcc00);
+  }
 
-    .pointer {
-      position: absolute;
-      top: -30px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 25px solid transparent;
-      border-right: 25px solid transparent;
-      border-bottom: 50px solid gold;
-      filter: drop-shadow(0px 0px 5px #ffcc00);
-      z-index: 2;
-    }
+  .pointer {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 50px solid gold;
+    filter: drop-shadow(0px 0px 5px #ffcc00);
+    z-index: 2;
+  }
 
-    /* Winner message overlay */
-    .winner-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-size: 2rem;
-      font-weight: bold;
-      flex-direction: column;
-      z-index: 5;
-      display: none;
-    }
+  .winner-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    flex-direction: column;
+    z-index: 5;
+    display: none;
+    text-align: center;
+  }
 
-    .winner-overlay span {
-      font-size: 1.2rem;
-      margin-top: 10px;
-      color: gold;
-    }
+  .winner-overlay span {
+    font-size: 1.2rem;
+    margin-top: 10px;
+    color: gold;
+  }
 
-    .winner-overlay button {
-      margin-top: 20px;
-      padding: 12px 24px;
-      font-size: 1rem;
-      background: #ffd700;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      color: #660000;
-    }
-  </style>
+  .winner-overlay button {
+    margin-top: 20px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    background: #ffd700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #660000;
+  }
+
+  .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: gold;
+    opacity: 0.7;
+    pointer-events: none;
+    animation: fall 2s linear infinite;
+  }
+
+  @keyframes fall {
+    0% {transform: translateY(0) rotate(0deg);}
+    100% {transform: translateY(700px) rotate(360deg);}
+  }
+
+</style>
 </head>
 <body>
-  <div class="wheel-container">
-    <div class="pointer"></div>
-    <canvas id="wheel" width="550" height="550"></canvas>
-    <button class="spin-button" onclick="spin()">SPIN</button>
-  </div>
+<div class="wheel-container">
+  <div class="pointer"></div>
+  <canvas id="wheel" width="550" height="550"></canvas>
+  <button class="spin-button" onclick="spin()">SPIN</button>
+</div>
 
-  <!-- Winner popup -->
-  <div class="winner-overlay" id="winnerOverlay">
-    <div id="winnerText">🎉 You won!</div>
-    <span id="winnerPrize"></span>
-    <button onclick="closeOverlay()">Close</button>
-  </div>
+<div class="winner-overlay" id="winnerOverlay">
+  <div id="winnerText">🎉 Congratulations!</div>
+  <span id="winnerPrize"></span>
+  <button onclick="closeOverlay()">Close</button>
+</div>
 
-  <script>
-    const canvas = document.getElementById("wheel");
-    const ctx = canvas.getContext("2d");
+<script>
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
 
-    const prizes = [
-      { label: "Smart Watch", icon: "⌚" },
-      { label: "Bluetooth Speaker", icon: "🔊" },
-      { label: "Sound Bar", icon: "📻" },
-      { label: "Car Refrigerator", icon: "❄️" },
-      { label: "Bluetooth Speaker", icon: "🔊" },
-      { label: "Full Tank Fuel", icon: "⛽" },
-      { label: "Karaoke System", icon: "🎤" },
-      { label: '32" LED TV', icon: "📺" },
-      { label: "Luxury Spa Voucher", icon: "💆" },
-      { label: "2g Gold Coin", icon: "🥇" }
-    ];
+const prizes = [
+  { label: "Smart Watch", icon: "⌚" },
+  { label: "Bluetooth Speaker", icon: "🔊" },
+  { label: "Sound Bar", icon: "📻" },
+  { label: "Car Refrigerator", icon: "❄️" },
+  { label: "Bluetooth Speaker", icon: "🔊" },
+  { label: "Full Tank Fuel", icon: "⛽" },
+  { label: "Karaoke System", icon: "🎤" },
+  { label: '32" LED TV', icon: "📺" },
+  { label: "Luxury Spa Voucher", icon: "💆" },
+  { label: "2g Gold Coin", icon: "🥇" }
+];
 
-    const colors = ["#b30000", "#ffd700"];
+const colors = ["#b30000", "#ffd700"];
+let startAngle = 0;
+const arc = (2 * Math.PI) / prizes.length;
 
-    let startAngle = 0;
-    const arc = (2 * Math.PI) / prizes.length;
+function drawWheel() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<prizes.length;i++){
+    const angle = startAngle + i*arc;
+    ctx.fillStyle = colors[i%colors.length];
+    ctx.beginPath();
+    ctx.moveTo(275,275);
+    ctx.arc(275,275,275,angle,angle+arc);
+    ctx.closePath();
+    ctx.fill();
 
-    function drawWheel() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < prizes.length; i++) {
-        const angle = startAngle + i * arc;
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.beginPath();
-        ctx.moveTo(275, 275);
-        ctx.arc(275, 275, 275, angle, angle + arc);
-        ctx.closePath();
-        ctx.fill();
+    // Icon + label
+    ctx.save();
+    ctx.translate(275,275);
+    ctx.rotate(angle+arc/2);
+    ctx.fillStyle = (i%2===0)?"#fff":"#660000";
+    ctx.font = "bold 16px Arial";
+    ctx.textAlign="right";
+    ctx.fillText(prizes[i].icon+" "+prizes[i].label,250,10);
+    ctx.restore();
+  }
+}
 
-        // Text + Icon
-        ctx.save();
-        ctx.translate(275, 275);
-        ctx.rotate(angle + arc / 2);
-        ctx.fillStyle = (i % 2 === 0) ? "#fff" : "#660000";
-        ctx.font = "bold 16px Arial";
-        ctx.textAlign = "right";
-        ctx.fillText(prizes[i].icon + " " + prizes[i].label, 250, 10);
-        ctx.restore();
-      }
-    }
+drawWheel();
 
-    drawWheel();
+let spinAngle = 0;
+let spinTime = 0;
+let spinTimeTotal = 0;
+const forcedPrizes = ["Smart Watch","Bluetooth Speaker","Luxury Spa Voucher"];
 
-    let spinAngle = 0;
-    let spinTime = 0;
-    let spinTimeTotal = 0;
+function spin(){
+  const chosenPrize = forcedPrizes[Math.floor(Math.random()*forcedPrizes.length)];
+  const idx = prizes.findIndex(p=>p.label===chosenPrize);
+  const prizeAngle = idx*arc + arc/2;
+  const finalAngle = 2*Math.PI*5 + (2*Math.PI - prizeAngle);
+  spinAngle = finalAngle;
+  spinTime=0;
+  spinTimeTotal=4000;
+  rotateWheel(idx);
+}
 
-    const forcedPrizes = ["Smart Watch", "Bluetooth Speaker", "Luxury Spa Voucher"];
+function rotateWheel(finalIndex){
+  spinTime+=30;
+  if(spinTime>=spinTimeTotal){
+    showWinner(prizes[finalIndex].label, prizes[finalIndex].icon);
+    return;
+  }
+  const easeOut = easeOutCubic(spinTime,0,spinAngle,spinTimeTotal);
+  startAngle += easeOut/100;
+  drawWheel();
+  requestAnimationFrame(()=>rotateWheel(finalIndex));
+}
 
-    function spin() {
-      const chosenPrize = forcedPrizes[Math.floor(Math.random() * forcedPrizes.length)];
-      const idx = prizes.findIndex(p => p.label === chosenPrize);
+function easeOutCubic(t,b,c,d){
+  t/=d; t--;
+  return c*(t*t*t+1)+b;
+}
 
-      const prizeAngle = idx * arc + arc / 2;
-      const finalAngle = 2 * Math.PI * 5 + (2 * Math.PI - prizeAngle);
+function showWinner(prize, icon){
+  const overlay = document.getElementById("winnerOverlay");
+  document.getElementById("winnerPrize").innerText = `${icon} You won: ${prize}`;
+  overlay.style.display="flex";
 
-      spinAngle = finalAngle;
-      spinTime = 0;
-      spinTimeTotal = 4000;
+  createConfetti();
 
-      rotateWheel(idx);
-    }
+  // auto close after 5s
+  setTimeout(()=>{
+    overlay.style.display="none";
+    removeConfetti();
+  },5000);
+}
 
-    function rotateWheel(finalIndex) {
-      spinTime += 30;
-      if (spinTime >= spinTimeTotal) {
-        showWinner(prizes[finalIndex].label, prizes[finalIndex].icon);
-        return;
-      }
-      const easeOut = easeOutCubic(spinTime, 0, spinAngle, spinTimeTotal);
-      startAngle += easeOut / 100;
-      drawWheel();
-      requestAnimationFrame(() => rotateWheel(finalIndex));
-    }
+function closeOverlay(){
+  document.getElementById("winnerOverlay").style.display="none";
+  removeConfetti();
+}
 
-    function easeOutCubic(t, b, c, d) {
-      t /= d; t--;
-      return c*(t*t*t + 1) + b;
-    }
-
-    function showWinner(prize, icon) {
-      document.getElementById("winnerText").innerText = "🎉 Congratulations!";
-      document.getElementById("winnerPrize").innerText = `${icon} You won: ${prize}`;
-      const overlay = document.getElementById("winnerOverlay");
-      overlay.style.display = "flex";
-
-      // Auto close after 5 seconds
-      setTimeout(() => {
-        overlay.style.display = "none";
-      }, 5000);
-    }
-
-    function closeOverlay() {
-      document.getElementById("winnerOverlay").style.display = "none";
-    }
-  </script>
+// Confetti effect
+let confettiElements=[];
+function createConfetti(){
+  for(let i=0;i<100;i++){
+    const conf = document.createElement("div");
+    conf.className="confetti";
+    conf.style.left=Math.random()*window.innerWidth+"px";
+    conf.style.backgroundColor = `hsl(${Math.random()*50+40}, 100%, 50%)`;
+    conf.style.animationDuration = (Math.random()*2+2)+"s";
+    document.body.appendChild(conf);
+    confettiElements.push(conf);
+  }
+}
+function removeConfetti(){
+  confettiElements.forEach(c=>c.remove());
+  confettiElements=[];
+}
+</script>
 </body>
 </html>
