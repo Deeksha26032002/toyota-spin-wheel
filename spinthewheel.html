@@ -122,7 +122,6 @@ canvas {
   0% {transform: translateY(0) rotate(0deg);}
   100% {transform: translateY(700px) rotate(360deg);}
 }
-
 </style>
 </head>
 <body>
@@ -146,16 +145,15 @@ const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 
 const prizes = [
-  { label:"Smart Watch", icon:"⌚" },
-  { label:"Bluetooth Speaker", icon:"🔊" },
-  { label:"Sound Bar", icon:"📻" },
-  { label:"Car Refrigerator", icon:"❄️" },
-  { label:"Bluetooth Speaker", icon:"🔊" },
-  { label:"Full Tank Fuel", icon:"⛽" },
-  { label:"Karaoke System", icon:"🎤" },
-  { label:'32" LED TV', icon:"📺" },
-  { label:"Luxury Spa Voucher", icon:"💆" },
-  { label:"1g Gold Coin", icon:"🥇" }
+  { label:"Smart Watch", img:"images/watch.png" },  
+  { label:"Speaker", img:"images/speaker1.jpg" },
+  { label:"Sound Bar", img:"images/karaoke.png" },
+  { label:"Car Refrigerator", img:"images/fridge.jpg" },
+  { label:"Karaoke System", img:"images/speaker2.png" },
+  { label:"Full Tank Fuel", img:"images/fuel.jpg" },
+  { label:'32" LED TV', img:"images/tv.jpg" },
+  { label:"Luxury Spa ", img:"images/spa.jpg" },
+  { label:"1g Gold Coin", img:"images/gold.avif" }
 ];
 
 const colors = ["#b30000","#ffd700"];
@@ -166,8 +164,7 @@ function drawWheel(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   for(let i=0;i<prizes.length;i++){
     const angle=startAngle + i*arc;
-    // Gradient for metallic look
-    const gradient = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+    const gradient=ctx.createLinearGradient(0,0,canvas.width,canvas.height);
     gradient.addColorStop(0, colors[i%colors.length]);
     gradient.addColorStop(1, "#ffdd66");
     ctx.fillStyle=gradient;
@@ -178,18 +175,36 @@ function drawWheel(){
     ctx.closePath();
     ctx.fill();
 
-    // Icon + label
-    ctx.save();
-    ctx.translate(275,275);
-    ctx.rotate(angle+arc/2);
-    ctx.fillStyle=(i%2===0)?"#fff":"#660000";
-    ctx.font="bold 16px Arial";
-    ctx.textAlign="right";
-    ctx.fillText(prizes[i].icon+" "+prizes[i].label,250,10);
-    ctx.restore();
+    // Draw image + text side by side
+    const img = new Image();
+    img.src = prizes[i].img;
+    ((angleLocal, imgLocal, prizeLabel) => {
+      imgLocal.onload = function() {
+        ctx.save();
+        ctx.translate(275,275);
+        ctx.rotate(angleLocal + arc/2);
+
+        const radius = 130;
+        // Image on left
+        ctx.drawImage(imgLocal, radius - 25, -25, 50, 50);
+
+        // Text on right of image
+        const textX = radius + 35;
+        const textY = 15; // vertical alignment with image
+        ctx.fillStyle = "#660000";
+        ctx.font = "bold 14px Arial";
+        ctx.textAlign = "left";
+        ctx.shadowColor = "#FFD700";
+        ctx.shadowBlur = 4;
+        ctx.fillText(prizeLabel, textX, textY);
+
+        ctx.shadowBlur = 0;
+        ctx.restore();
+      }
+    })(angle, img, prizes[i].label);
   }
 
-  // Draw center hub
+  // Center hub
   ctx.beginPath();
   ctx.arc(275,275,50,0,2*Math.PI);
   ctx.fillStyle="#ffd700";
@@ -219,7 +234,7 @@ function spin(){
 function rotateWheel(finalIndex){
   spinTime+=30;
   if(spinTime>=spinTimeTotal){
-    showWinner(prizes[finalIndex].label,prizes[finalIndex].icon);
+    showWinner(prizes[finalIndex].label, prizes[finalIndex].img);
     return;
   }
   const easeOut=easeOutCubic(spinTime,0,spinAngle,spinTimeTotal);
@@ -233,9 +248,9 @@ function easeOutCubic(t,b,c,d){
   return c*(t*t*t+1)+b;
 }
 
-function showWinner(prize,icon){
+function showWinner(prize,imgSrc){
   const overlay=document.getElementById("winnerOverlay");
-  document.getElementById("winnerPrize").innerText=`${icon} You won: ${prize}`;
+  document.getElementById("winnerPrize").innerHTML=`<img src="${imgSrc}" width="80" style="margin-bottom:10px;"><br>You won: ${prize}`;
   overlay.style.display="flex";
   createConfetti();
   setTimeout(()=>{
