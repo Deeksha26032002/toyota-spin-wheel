@@ -1,210 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Toyota Spin the Wheel</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Toyota Prize Wheel</title>
   <style>
     body {
       margin: 0;
-      background: linear-gradient(135deg, #000, #333);
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      flex-direction: column;
-      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #b30000, #660000);
+      font-family: "Arial", sans-serif;
     }
 
     .wheel-container {
       position: relative;
-      width: 500px;
-      height: 500px;
+      width: 550px;
+      height: 550px;
     }
 
-    .wheel {
-      width: 100%;
-      height: 100%;
+    canvas {
       border-radius: 50%;
-      border: 12px solid #c1121f;
-      position: relative;
-      overflow: hidden;
-      transform: rotate(0deg);
-      transition: transform 5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-      box-shadow: 0 0 40px rgba(193, 18, 31, 0.6);
+      background: radial-gradient(circle at center, #fffbe6 0%, #ffd700 100%);
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.4);
     }
 
-    .slice {
+    .spin-button {
       position: absolute;
-      width: 50%;
-      height: 50%;
-      transform-origin: 100% 100%;
-      clip-path: polygon(0 0, 100% 0, 100% 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 14px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 18px 36px;
+      background: linear-gradient(145deg, #ffcc00, #ffd700);
+      border: none;
+      border-radius: 50px;
+      font-size: 20px;
       font-weight: bold;
-      text-align: center;
-      padding: 10px;
-      color: #fff;
+      color: #660000;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      transition: 0.2s;
+      z-index: 2;
     }
-
-    .slice:nth-child(odd) {
-      background: linear-gradient(135deg, #c1121f, #780000);
-    }
-    .slice:nth-child(even) {
-      background: linear-gradient(135deg, #555, #222);
+    .spin-button:hover {
+      background: linear-gradient(145deg, #ffd700, #ffcc00);
+      transform: translate(-50%, -50%) scale(1.05);
     }
 
     .pointer {
       position: absolute;
-      top: -35px;
+      top: -30px;
       left: 50%;
       transform: translateX(-50%);
       width: 0;
       height: 0;
       border-left: 25px solid transparent;
       border-right: 25px solid transparent;
-      border-bottom: 50px solid #c1121f;
-      filter: drop-shadow(0 0 5px #000);
-    }
-
-    .center-logo {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: #fff url("https://upload.wikimedia.org/wikipedia/commons/9/9d/Toyota_carlogo.png") no-repeat center/70%;
-      border: 6px solid #c1121f;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+      border-bottom: 50px solid gold;
+      filter: drop-shadow(0px 0px 5px #ffcc00);
       z-index: 2;
     }
 
-    .spin-btn {
-      margin-top: 30px;
-      padding: 15px 40px;
+    /* Winner message overlay */
+    .winner-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      flex-direction: column;
+      z-index: 5;
+      display: none;
+    }
+
+    .winner-overlay span {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: gold;
+    }
+
+    .winner-overlay button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      background: #ffd700;
       border: none;
       border-radius: 8px;
-      background: #c1121f;
-      color: #fff;
-      font-size: 20px;
-      font-weight: bold;
       cursor: pointer;
-      transition: 0.3s;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-    }
-
-    .spin-btn:hover {
-      background: #a00d19;
-      transform: scale(1.05);
-    }
-
-    .result-popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      background: #fff;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(0,0,0,0.6);
-      text-align: center;
-      font-size: 24px;
       font-weight: bold;
-      color: #c1121f;
-      transition: transform 0.4s ease;
-      z-index: 999;
-    }
-
-    .result-popup.active {
-      transform: translate(-50%, -50%) scale(1);
-    }
-
-    .close-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #c1121f;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+      color: #660000;
     }
   </style>
 </head>
 <body>
-
   <div class="wheel-container">
     <div class="pointer"></div>
-    <div class="wheel" id="wheel"></div>
-    <div class="center-logo"></div>
+    <canvas id="wheel" width="550" height="550"></canvas>
+    <button class="spin-button" onclick="spin()">SPIN</button>
   </div>
 
-  <button class="spin-btn" id="spin">SPIN</button>
-
-  <div class="result-popup" id="result-popup">
-    <div id="result-text"></div>
-    <button class="close-btn" id="close-popup">Close</button>
+  <!-- Winner popup -->
+  <div class="winner-overlay" id="winnerOverlay">
+    <div id="winnerText">🎉 You won!</div>
+    <span id="winnerPrize"></span>
+    <button onclick="closeOverlay()">Close</button>
   </div>
 
   <script>
-    const wheel = document.getElementById("wheel");
-    const spinBtn = document.getElementById("spin");
-    const resultPopup = document.getElementById("result-popup");
-    const resultText = document.getElementById("result-text");
-    const closePopup = document.getElementById("close-popup");
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
 
     const prizes = [
-      "Smart Watch",
-      "Bluetooth Speaker",
-      "Sound Bar",
-      "Car Refrigerator",
-      "Bluetooth Speaker",
-      "Full Tank Fuel",
-      "Karaoke System",
-      '32" LED',
-      "Luxury Spa Voucher",
-      "2 Gram Gold Coin"
+      { label: "Smart Watch", icon: "⌚" },
+      { label: "Bluetooth Speaker", icon: "🔊" },
+      { label: "Sound Bar", icon: "📻" },
+      { label: "Car Refrigerator", icon: "❄️" },
+      { label: "Bluetooth Speaker", icon: "🔊" },
+      { label: "Full Tank Fuel", icon: "⛽" },
+      { label: "Karaoke System", icon: "🎤" },
+      { label: '32" LED TV', icon: "📺" },
+      { label: "Luxury Spa Voucher", icon: "💆" },
+      { label: "2g Gold Coin", icon: "🥇" }
     ];
 
-    const allowed = ["Smart Watch", "Bluetooth Speaker", "Luxury Spa Voucher"];
+    const colors = ["#b30000", "#ffd700"];
 
-    const sliceDeg = 360 / prizes.length;
-    prizes.forEach((prize, i) => {
-      const slice = document.createElement("div");
-      slice.classList.add("slice");
-      slice.textContent = prize;
-      slice.style.transform = `rotate(${i * sliceDeg}deg) skewY(${90 - sliceDeg}deg)`;
-      wheel.appendChild(slice);
-    });
+    let startAngle = 0;
+    const arc = (2 * Math.PI) / prizes.length;
 
-    let spinning = false;
+    function drawWheel() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < prizes.length; i++) {
+        const angle = startAngle + i * arc;
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.beginPath();
+        ctx.moveTo(275, 275);
+        ctx.arc(275, 275, 275, angle, angle + arc);
+        ctx.closePath();
+        ctx.fill();
 
-    spinBtn.addEventListener("click", () => {
-      if (spinning) return;
-      spinning = true;
+        // Text + Icon
+        ctx.save();
+        ctx.translate(275, 275);
+        ctx.rotate(angle + arc / 2);
+        ctx.fillStyle = (i % 2 === 0) ? "#fff" : "#660000";
+        ctx.font = "bold 16px Arial";
+        ctx.textAlign = "right";
+        ctx.fillText(prizes[i].icon + " " + prizes[i].label, 250, 10);
+        ctx.restore();
+      }
+    }
 
-      const prize = allowed[Math.floor(Math.random() * allowed.length)];
-      const index = prizes.indexOf(prize);
+    drawWheel();
 
-      const randomOffset = Math.floor(Math.random() * sliceDeg);
-      const targetAngle = 360 * 6 + (360 - (index * sliceDeg + sliceDeg / 2)) + randomOffset;
+    let spinAngle = 0;
+    let spinTime = 0;
+    let spinTimeTotal = 0;
 
-      wheel.style.transform = `rotate(${targetAngle}deg)`;
+    const forcedPrizes = ["Smart Watch", "Bluetooth Speaker", "Luxury Spa Voucher"];
 
+    function spin() {
+      const chosenPrize = forcedPrizes[Math.floor(Math.random() * forcedPrizes.length)];
+      const idx = prizes.findIndex(p => p.label === chosenPrize);
+
+      const prizeAngle = idx * arc + arc / 2;
+      const finalAngle = 2 * Math.PI * 5 + (2 * Math.PI - prizeAngle);
+
+      spinAngle = finalAngle;
+      spinTime = 0;
+      spinTimeTotal = 4000;
+
+      rotateWheel(idx);
+    }
+
+    function rotateWheel(finalIndex) {
+      spinTime += 30;
+      if (spinTime >= spinTimeTotal) {
+        showWinner(prizes[finalIndex].label, prizes[finalIndex].icon);
+        return;
+      }
+      const easeOut = easeOutCubic(spinTime, 0, spinAngle, spinTimeTotal);
+      startAngle += easeOut / 100;
+      drawWheel();
+      requestAnimationFrame(() => rotateWheel(finalIndex));
+    }
+
+    function easeOutCubic(t, b, c, d) {
+      t /= d; t--;
+      return c*(t*t*t + 1) + b;
+    }
+
+    function showWinner(prize, icon) {
+      document.getElementById("winnerText").innerText = "🎉 Congratulations!";
+      document.getElementById("winnerPrize").innerText = `${icon} You won: ${prize}`;
+      const overlay = document.getElementById("winnerOverlay");
+      overlay.style.display = "flex";
+
+      // Auto close after 5 seconds
       setTimeout(() => {
-        resultText.textContent = `🎉 Congratulations! You won: ${prize} 🎉`;
-        resultPopup.classList.add("active");
-        spinning = false;
-      }, 5200);
-    });
+        overlay.style.display = "none";
+      }, 5000);
+    }
 
-    closePopup.addEventListener("click", () => {
-      resultPopup.classList.remove("active");
-    });
+    function closeOverlay() {
+      document.getElementById("winnerOverlay").style.display = "none";
+    }
   </script>
 </body>
 </html>
