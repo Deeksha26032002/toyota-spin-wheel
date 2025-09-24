@@ -235,7 +235,7 @@ let spinTime=0;
 let spinTimeTotal=0;
 let isSpinning = false; // flag
 
-const forcedPrizes=["Smart Watch","Speaker","Luxury Spa "];
+const forcedPrizes=["Smart Watch","Speaker","Luxury Spa ","Full Tank Fuel"];
 
 function spin(){
   if (isSpinning) return;
@@ -278,10 +278,6 @@ function showWinner(prize,imgSrc){
   overlay.style.display="flex";
   createConfetti();
 
-  setTimeout(()=>{
-    overlay.style.display="none";
-    removeConfetti();
-  },5000);
 }
 
 function closeOverlay(){
