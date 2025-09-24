@@ -19,11 +19,14 @@ body {
 
 .wheel-container {
   position: relative;
-  width: 550px;
-  height: 550px;
+  width: 90vw;   /* responsive */
+  max-width: 550px;
+  aspect-ratio: 1/1; /* keeps it square */
 }
 
 canvas {
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.3);
   background: radial-gradient(circle at center, #fffbe6 0%, #ffd700 100%);
@@ -34,11 +37,11 @@ canvas {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 18px 36px;
+  padding: 12px 24px;
   background: linear-gradient(145deg, #ffcc00, #ffd700);
   border: none;
   border-radius: 50px;
-  font-size: 20px;
+  font-size: clamp(14px, 3vw, 20px);
   font-weight: bold;
   color: #660000;
   cursor: pointer;
@@ -53,24 +56,25 @@ canvas {
 
 .pointer {
   position: absolute;
-  top: -30px;
+  top: -6%;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 25px solid transparent;
-  border-right: 25px solid transparent;
-  border-bottom: 50px solid gold;
+  border-left: 6% solid transparent;
+  border-right: 6% solid transparent;
+  border-bottom: 12% solid gold;
   filter: drop-shadow(0px 0px 5px #ffcc00);
   z-index: 2;
 }
 
 .wheel-text {
   margin-top: 20px;
-  font-size: 24px;
+  font-size: clamp(16px, 4vw, 24px);
   color: gold;
   font-weight: bold;
   text-shadow: 0 0 8px #ffd700;
+  text-align:center;
 }
 
 /* Winner overlay */
@@ -88,6 +92,7 @@ canvas {
   z-index:5;
   display:none;
   text-align:center;
+  padding: 20px;
 }
 
 .winner-overlay span {
@@ -120,7 +125,7 @@ canvas {
 
 @keyframes fall {
   0% {transform: translateY(0) rotate(0deg);}
-  100% {transform: translateY(700px) rotate(360deg);}
+  100% {transform: translateY(100vh) rotate(360deg);}
 }
 </style>
 </head>
@@ -128,11 +133,11 @@ canvas {
 
 <div class="wheel-container">
   <div class="pointer"></div>
-  <canvas id="wheel" width="550" height="550"></canvas>
+  <canvas id="wheel"></canvas>
   <button class="spin-button" onclick="spin()">SPIN</button>
 </div>
 
-<div class="wheel-text">Spin & Win with Lakozy Toyota</div>
+<div class="wheel-text">Spin & Win with Lakozy Toyota</div>
 
 <div class="winner-overlay" id="winnerOverlay">
   <div id="winnerText">🎉 Congratulations!</div>
@@ -143,6 +148,15 @@ canvas {
 <script>
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
+
+// dynamically match canvas size to container
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  drawWheel();
+}
+window.addEventListener("resize", resizeCanvas);
 
 const prizes = [
   { label:"Smart Watch", img:"images/watch.png" },  
@@ -158,10 +172,13 @@ const prizes = [
 
 const colors = ["#b30000","#ffd700"];
 let startAngle=0;
-const arc=(2*Math.PI)/prizes.length;
-
+let arc;
 function drawWheel(){
+  const size = canvas.width;
+  const center = size/2;
+  arc=(2*Math.PI)/prizes.length;
   ctx.clearRect(0,0,canvas.width,canvas.height);
+
   for(let i=0;i<prizes.length;i++){
     const angle=startAngle + i*arc;
     const gradient=ctx.createLinearGradient(0,0,canvas.width,canvas.height);
@@ -170,8 +187,8 @@ function drawWheel(){
     ctx.fillStyle=gradient;
 
     ctx.beginPath();
-    ctx.moveTo(275,275);
-    ctx.arc(275,275,275,angle,angle+arc);
+    ctx.moveTo(center,center);
+    ctx.arc(center,center,center,angle,angle+arc);
     ctx.closePath();
     ctx.fill();
 
@@ -181,18 +198,17 @@ function drawWheel(){
     ((angleLocal, imgLocal, prizeLabel) => {
       imgLocal.onload = function() {
         ctx.save();
-        ctx.translate(275,275);
+        ctx.translate(center,center);
         ctx.rotate(angleLocal + arc/2);
 
-        const radius = 130;
-        // Image on left
-        ctx.drawImage(imgLocal, radius - 25, -25, 50, 50);
+        const radius = size*0.25;
+        const imgSize = size*0.1;
+        ctx.drawImage(imgLocal, radius - imgSize/2, -imgSize/2, imgSize, imgSize);
 
-        // Text on right of image
-        const textX = radius + 35;
-        const textY = 15; // vertical alignment with image
+        const textX = radius + imgSize*0.6;
+        const textY = imgSize*0.3;
         ctx.fillStyle = "#660000";
-        ctx.font = "bold 14px Arial";
+        ctx.font = `bold ${Math.floor(size*0.025)}px Arial`;
         ctx.textAlign = "left";
         ctx.shadowColor = "#FFD700";
         ctx.shadowBlur = 4;
@@ -206,39 +222,46 @@ function drawWheel(){
 
   // Center hub
   ctx.beginPath();
-  ctx.arc(275,275,50,0,2*Math.PI);
+  ctx.arc(center,center,size*0.09,0,2*Math.PI);
   ctx.fillStyle="#ffd700";
   ctx.shadowColor="#ffcc00";
   ctx.shadowBlur=15;
   ctx.fill();
 }
-
-drawWheel();
+resizeCanvas();
 
 let spinAngle=0;
 let spinTime=0;
 let spinTimeTotal=0;
-const forcedPrizes=["Smart Watch","Bluetooth Speaker","Luxury Spa Voucher"];
+let isSpinning = false; // flag
+
+const forcedPrizes=["Smart Watch","Speaker","Luxury Spa "];
 
 function spin(){
-  const chosenPrize=forcedPrizes[Math.floor(Math.random()*forcedPrizes.length)];
-  const idx=prizes.findIndex(p=>p.label===chosenPrize);
-  const prizeAngle=idx*arc + arc/2;
-  const finalAngle=2*Math.PI*5 + (2*Math.PI - prizeAngle);
-  spinAngle=finalAngle;
-  spinTime=0;
-  spinTimeTotal=4000;
+  if (isSpinning) return;
+  isSpinning = true;
+
+  const chosenPrize = forcedPrizes[Math.floor(Math.random()*forcedPrizes.length)];
+  const idx = prizes.findIndex(p=>p.label===chosenPrize);
+  const prizeAngle = idx*arc + arc/2;
+  const finalAngle = 2*Math.PI*5 + (2*Math.PI - prizeAngle);
+
+  spinAngle = finalAngle;
+  spinTime = 0;
+  spinTimeTotal = 4000;
+
   rotateWheel(idx);
 }
 
 function rotateWheel(finalIndex){
-  spinTime+=30;
-  if(spinTime>=spinTimeTotal){
+  spinTime += 30;
+  if(spinTime >= spinTimeTotal){
     showWinner(prizes[finalIndex].label, prizes[finalIndex].img);
+    isSpinning = false;
     return;
   }
-  const easeOut=easeOutCubic(spinTime,0,spinAngle,spinTimeTotal);
-  startAngle += easeOut/100;
+  const easeOut = easeOutCubic(spinTime, 0, spinAngle, spinTimeTotal);
+  startAngle += easeOut / 100;
   drawWheel();
   requestAnimationFrame(()=>rotateWheel(finalIndex));
 }
@@ -250,9 +273,11 @@ function easeOutCubic(t,b,c,d){
 
 function showWinner(prize,imgSrc){
   const overlay=document.getElementById("winnerOverlay");
-  document.getElementById("winnerPrize").innerHTML=`<img src="${imgSrc}" width="80" style="margin-bottom:10px;"><br>You won: ${prize}`;
+  document.getElementById("winnerPrize").innerHTML=
+    `<img src="${imgSrc}" width="80" style="margin-bottom:10px;"><br>You won: ${prize}`;
   overlay.style.display="flex";
   createConfetti();
+
   setTimeout(()=>{
     overlay.style.display="none";
     removeConfetti();
@@ -262,11 +287,12 @@ function showWinner(prize,imgSrc){
 function closeOverlay(){
   document.getElementById("winnerOverlay").style.display="none";
   removeConfetti();
+  isSpinning = false;
 }
 
 let confettiElements=[];
 function createConfetti(){
-  for(let i=0;i<100;i++){
+  for(let i=0;i<80;i++){
     const conf=document.createElement("div");
     conf.className="confetti";
     conf.style.left=Math.random()*window.innerWidth+"px";
